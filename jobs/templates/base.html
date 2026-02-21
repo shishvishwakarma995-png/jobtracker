@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>{% block title %}Job Tracker{% endblock %}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0a0c12;
+      color: #e2e8f0;
+      min-height: 100vh;
+    }
+
+    /* ── BACKGROUND GLOW ── */
+    body::before {
+      content: '';
+      position: fixed;
+      top: -200px; left: -200px;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 70%);
+      pointer-events: none; z-index: 0;
+    }
+    body::after {
+      content: '';
+      position: fixed;
+      bottom: -200px; right: -200px;
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(16,185,129,0.08) 0%, transparent 70%);
+      pointer-events: none; z-index: 0;
+    }
+
+    .container { position: relative; z-index: 1; }
+
+    /* ── NAVBAR ── */
+    .navbar {
+      background: rgba(15,17,26,0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      padding: 0.9rem 0;
+      position: sticky; top: 0; z-index: 100;
+    }
+
+    .navbar-brand {
+      font-weight: 800;
+      font-size: 1.1rem;
+      color: white !important;
+      display: flex; align-items: center; gap: 0.6rem;
+      letter-spacing: -0.3px;
+    }
+
+    .brand-icon {
+      width: 32px; height: 32px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.9rem;
+      box-shadow: 0 0 16px rgba(99,102,241,0.5);
+    }
+
+    .nav-link {
+      color: rgba(255,255,255,0.55) !important;
+      font-size: 0.85rem;
+      font-weight: 500;
+      padding: 0.4rem 0.85rem !important;
+      border-radius: 8px;
+      transition: all 0.2s;
+      display: flex; align-items: center; gap: 0.4rem;
+    }
+    .nav-link:hover {
+      color: white !important;
+      background: rgba(255,255,255,0.07);
+    }
+
+    .nav-user {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 50px;
+      padding: 0.3rem 1rem;
+      color: rgba(255,255,255,0.6);
+      font-size: 0.82rem;
+      font-weight: 500;
+      display: flex; align-items: center; gap: 0.4rem;
+    }
+
+    .btn-nav-logout {
+      background: rgba(239,68,68,0.12);
+      border: 1px solid rgba(239,68,68,0.25);
+      color: #f87171;
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 0.3rem 1rem;
+      border-radius: 50px;
+      text-decoration: none;
+      display: flex; align-items: center; gap: 0.4rem;
+      transition: all 0.2s;
+    }
+    .btn-nav-logout:hover {
+      background: rgba(239,68,68,0.22);
+      color: #fca5a5;
+    }
+
+    /* ── STAT CARDS ── */
+    .stat-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 16px;
+      padding: 1.6rem 1.2rem;
+      text-align: center;
+      transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+      animation: slideUp 0.5s ease both;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      border-radius: 16px 16px 0 0;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-5px);
+      border-color: rgba(255,255,255,0.12);
+    }
+
+    .stat-card .stat-num {
+      font-size: 2.6rem;
+      font-weight: 800;
+      line-height: 1;
+      margin-bottom: 0.3rem;
+      letter-spacing: -2px;
+    }
+
+    .stat-card .stat-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: rgba(255,255,255,0.4);
+    }
+
+    .stat-card .stat-icon {
+      font-size: 1.4rem;
+      margin-bottom: 0.6rem;
+      display: block;
+    }
+
+    .stat-total::before   { background: linear-gradient(90deg, #6366f1, #8b5cf6); }
+    .stat-applied::before { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+    .stat-interview::before { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+    .stat-offer::before   { background: linear-gradient(90deg, #10b981, #34d399); }
+    .stat-rejected::before{ background: linear-gradient(90deg, #ef4444, #f87171); }
+
+    .stat-total   { box-shadow: 0 0 30px rgba(99,102,241,0.08); }
+    .stat-total   .stat-num { color: #a5b4fc; }
+    .stat-applied .stat-num { color: #60a5fa; }
+    .stat-interview .stat-num { color: #fbbf24; }
+    .stat-offer   .stat-num { color: #34d399; }
+    .stat-rejected .stat-num { color: #f87171; }
+
+    .stat-total:hover   { box-shadow: 0 8px 32px rgba(99,102,241,0.2); }
+    .stat-applied:hover { box-shadow: 0 8px 32px rgba(59,130,246,0.2); }
+    .stat-interview:hover { box-shadow: 0 8px 32px rgba(245,158,11,0.2); }
+    .stat-offer:hover   { box-shadow: 0 8px 32px rgba(16,185,129,0.2); }
+    .stat-rejected:hover{ box-shadow: 0 8px 32px rgba(239,68,68,0.2); }
+
+    /* ── CARDS ── */
+    .card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 16px;
+      box-shadow: none;
+      color: #e2e8f0;
+    }
+
+    /* ── TABLE ── */
+    .table { color: #cbd5e1; font-size: 0.88rem; }
+    .table thead th {
+      background: rgba(255,255,255,0.03);
+      color: rgba(255,255,255,0.35);
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      padding: 0.9rem 1rem;
+    }
+    .table tbody td {
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      padding: 0.9rem 1rem;
+      vertical-align: middle;
+    }
+    .table tbody tr:last-child td { border-bottom: none; }
+    .table tbody tr:hover td { background: rgba(255,255,255,0.025); }
+    .table tbody tr:hover .fw-semibold { color: #e2e8f0 !important; }
+
+    /* ── BADGES ── */
+    .badge { padding: 0.38em 0.85em; border-radius: 50px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.03em; }
+    .status-applied      { background: rgba(59,130,246,0.15);  color: #93c5fd; border: 1px solid rgba(59,130,246,0.2); }
+    .status-interviewing { background: rgba(245,158,11,0.15);  color: #fcd34d; border: 1px solid rgba(245,158,11,0.2); }
+    .status-offer        { background: rgba(16,185,129,0.15);  color: #6ee7b7; border: 1px solid rgba(16,185,129,0.2); }
+    .status-rejected     { background: rgba(239,68,68,0.15);   color: #fca5a5; border: 1px solid rgba(239,68,68,0.2); }
+    .status-withdrawn    { background: rgba(100,116,139,0.15); color: #94a3b8; border: 1px solid rgba(100,116,139,0.2); }
+
+    /* ── BUTTONS ── */
+    .btn { font-weight: 600; border-radius: 10px; font-size: 0.85rem; transition: transform 0.15s, box-shadow 0.2s; }
+    .btn:hover { transform: translateY(-1px); }
+    .btn:active { transform: scale(0.97); }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      border: none;
+      box-shadow: 0 0 20px rgba(99,102,241,0.35);
+    }
+    .btn-primary:hover { box-shadow: 0 0 28px rgba(99,102,241,0.5); background: linear-gradient(135deg,#818cf8,#6366f1); }
+
+    .btn-warning {
+      background: rgba(245,158,11,0.15);
+      border: 1px solid rgba(245,158,11,0.3);
+      color: #fcd34d;
+    }
+    .btn-warning:hover { background: rgba(245,158,11,0.25); color: #fde68a; box-shadow: 0 0 16px rgba(245,158,11,0.2); }
+
+    .btn-danger {
+      background: rgba(239,68,68,0.12);
+      border: 1px solid rgba(239,68,68,0.25);
+      color: #f87171;
+    }
+    .btn-danger:hover { background: rgba(239,68,68,0.22); color: #fca5a5; box-shadow: 0 0 16px rgba(239,68,68,0.2); }
+
+    .btn-dark {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #e2e8f0;
+    }
+    .btn-dark:hover { background: rgba(255,255,255,0.1); color: white; }
+
+    .btn-outline-primary { border-color: rgba(99,102,241,0.4); color: #a5b4fc; }
+    .btn-outline-primary:hover { background: rgba(99,102,241,0.15); color: #c7d2fe; border-color: #6366f1; }
+    .btn-outline-warning { border-color: rgba(245,158,11,0.4); color: #fcd34d; }
+    .btn-outline-warning:hover { background: rgba(245,158,11,0.12); color: #fde68a; }
+    .btn-outline-success { border-color: rgba(16,185,129,0.4); color: #6ee7b7; }
+    .btn-outline-success:hover { background: rgba(16,185,129,0.12); color: #a7f3d0; }
+    .btn-outline-danger  { border-color: rgba(239,68,68,0.4); color: #f87171; }
+    .btn-outline-danger:hover { background: rgba(239,68,68,0.12); color: #fca5a5; }
+    .btn-outline-dark    { border-color: rgba(255,255,255,0.15); color: #94a3b8; }
+    .btn-outline-dark:hover { background: rgba(255,255,255,0.06); color: #e2e8f0; }
+
+    /* ── FORMS ── */
+    .form-control, .form-select {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.09);
+      color: #e2e8f0;
+      border-radius: 10px;
+      padding: 0.6rem 0.9rem;
+      font-size: 0.9rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .form-control:focus, .form-select:focus {
+      background: rgba(255,255,255,0.07);
+      border-color: rgba(99,102,241,0.6);
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
+      color: white;
+    }
+    .form-control::placeholder { color: rgba(255,255,255,0.25); }
+    .form-select option { background: #1a1d27; color: #e2e8f0; }
+    .form-label { font-weight: 600; font-size: 0.82rem; color: rgba(255,255,255,0.55); margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .form-text { color: rgba(255,255,255,0.3) !important; font-size: 0.78rem; }
+    .invalid-feedback { font-size: 0.78rem; }
+
+    /* ── MISC ── */
+    .text-muted { color: rgba(255,255,255,0.35) !important; }
+    .fw-semibold { color: #e2e8f0; }
+    h4, h5, h6 { color: #f1f5f9; font-weight: 700; }
+    a { color: #818cf8; }
+    a:hover { color: #a5b4fc; }
+    .alert { border: none; border-radius: 12px; font-size: 0.88rem; font-weight: 500; }
+    .alert-success { background: rgba(16,185,129,0.12); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.2); }
+    .alert-danger  { background: rgba(239,68,68,0.12);  color: #fca5a5; border: 1px solid rgba(239,68,68,0.2); }
+
+    /* ── ANIMATIONS ── */
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .page-wrapper { animation: slideUp 0.4s ease both; }
+    .stagger > *:nth-child(1) { animation: slideUp 0.4s ease 0.05s both; }
+    .stagger > *:nth-child(2) { animation: slideUp 0.4s ease 0.10s both; }
+    .stagger > *:nth-child(3) { animation: slideUp 0.4s ease 0.15s both; }
+    .stagger > *:nth-child(4) { animation: slideUp 0.4s ease 0.20s both; }
+    .stagger > *:nth-child(5) { animation: slideUp 0.4s ease 0.25s both; }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: #0a0c12; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar navbar-expand-lg">
+    <div class="container">
+      <a class="navbar-brand" href="{% url 'dashboard' %}">
+        <div class="brand-icon"><i class="bi bi-briefcase-fill"></i></div>
+        Job Tracker
+      </a>
+      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu"
+              style="color:rgba(255,255,255,0.5)">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navMenu">
+        <ul class="navbar-nav me-auto gap-1 ms-3">
+          {% if user.is_authenticated %}
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'dashboard' %}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'job-list' %}"><i class="bi bi-list-ul"></i> All Jobs</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'job-create' %}"><i class="bi bi-plus-circle"></i> Add Job</a>
+          </li>
+          {% endif %}
+        </ul>
+        <ul class="navbar-nav ms-auto align-items-center gap-2">
+          {% if user.is_authenticated %}
+          <li class="nav-item">
+            <span class="nav-user"><i class="bi bi-person-circle"></i> {{ user.username }}</span>
+          </li>
+          <li class="nav-item">
+            <a class="btn-nav-logout" href="{% url 'logout' %}"><i class="bi bi-box-arrow-right"></i> Logout</a>
+          </li>
+          {% else %}
+          <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Login</a></li>
+          {% endif %}
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- CONTENT -->
+  <div class="container mt-4 pb-5 page-wrapper">
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-3" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+    {% block content %}{% endblock %}
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

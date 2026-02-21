@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}Login — Job Tracker{% endblock %}
+{% block content %}
+<div class="row justify-content-center mt-5">
+  <div class="col-md-4">
+    <div class="text-center mb-4">
+      <div style="width:56px;height:56px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;box-shadow:0 0 30px rgba(99,102,241,0.4);font-size:1.4rem;">💼</div>
+      <h4 style="font-weight:800; letter-spacing:-0.4px;">Job Tracker</h4>
+      <p style="color:rgba(255,255,255,0.35); font-size:0.85rem;">Sign in to your account</p>
+    </div>
+    <div class="card p-4">
+      <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+          <label class="form-label">Username</label>
+          <input type="text" name="username" class="form-control" autofocus required placeholder="Enter username"/>
+        </div>
+        <div class="mb-4">
+          <label class="form-label">Password</label>
+          <input type="password" name="password" class="form-control" required placeholder="Enter password"/>
+        </div>
+        {% if form.errors %}
+          <div class="alert alert-danger py-2 mb-3" style="font-size:0.82rem;">Invalid username or password.</div>
+        {% endif %}
+        <button type="submit" class="btn btn-primary w-100 py-2">Sign In</button>
+      </form>
+      <p class="text-center mt-3 mb-0" style="font-size:0.82rem; color:rgba(255,255,255,0.3);">
+        Don't have an account? <a href="{% url 'register' %}" style="color:#818cf8;">Register</a>
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}

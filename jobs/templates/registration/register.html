@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}Register — Job Tracker{% endblock %}
+{% block content %}
+<div class="row justify-content-center mt-5">
+  <div class="col-md-5">
+    <div class="text-center mb-4">
+      <div style="width:56px;height:56px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;box-shadow:0 0 30px rgba(99,102,241,0.4);font-size:1.4rem;">💼</div>
+      <h4 style="font-weight:800; letter-spacing:-0.4px;">Create Account</h4>
+      <p style="color:rgba(255,255,255,0.35); font-size:0.85rem;">Start tracking your job applications</p>
+    </div>
+    <div class="card p-4">
+      <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+        <div class="mb-3">
+          <label class="form-label">{{ field.label }}</label>
+          <input type="{{ field.field.widget.input_type }}"
+                 name="{{ field.html_name }}"
+                 class="form-control {% if field.errors %}is-invalid{% endif %}"
+                 {% if field.value %}value="{{ field.value }}"{% endif %}
+                 placeholder="{{ field.label }}"/>
+          {% if field.errors %}
+            <div class="invalid-feedback">{{ field.errors|join:", " }}</div>
+          {% endif %}
+          {% if field.help_text %}
+            <div class="form-text">{{ field.help_text }}</div>
+          {% endif %}
+        </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary w-100 py-2 mt-2">Create Account</button>
+      </form>
+      <p class="text-center mt-3 mb-0" style="font-size:0.82rem; color:rgba(255,255,255,0.3);">
+        Already have an account? <a href="{% url 'login' %}" style="color:#818cf8;">Sign in</a>
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}
